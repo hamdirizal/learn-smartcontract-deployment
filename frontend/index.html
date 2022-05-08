@@ -1,0 +1,92 @@
+<html>
+
+<head>
+  <!-- Moralis SDK code -->
+  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+  <script src="https://unpkg.com/moralis/dist/moralis.js"></script>
+</head>
+
+<body>
+  <h1>My Testnet App</h1>
+  <p>View the result in the console.</p>
+
+  <button id="btn-retrieve">Retrieve Value</button>
+  <br>
+  <input type="number" id="input-num"><button id="btn-set">Set Value</button>
+
+  <script>
+    // connect to Moralis server
+    const serverUrl = "https://nbvgj1ourmdc.usemoralis.com:2053/server";
+    const appId = "wlSq7ry1PUhFTarMn1mPGsFtvpw0bKuvHE3XhQLh";
+    Moralis.start({ serverUrl, appId });
+
+    (async function () {
+      Moralis.initPlugins();
+      Moralis.enableWeb3();
+    })();
+
+    const CONTRACT_ABI = JSON.parse(`[{"inputs":[{"internalType":"string","name":"_name","type":"string"},{"internalType":"uint256","name":"_favoriteNumber","type":"uint256"}],"name":"addPerson","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"nameToFavoriteNumber","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"people","outputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"uint256","name":"favoriteNumber","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"retrieve","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_favoriteNumber","type":"uint256"}],"name":"store","outputs":[],"stateMutability":"nonpayable","type":"function"}]`);
+    const CONTRACT_ADDRESS = "0x2d43f99d1e9138e70561844b7f7eaad308002cb1";
+    const CHAIN = "ropsten";
+
+    const btnRetrieve = document.getElementById("btn-retrieve");
+    const btnSet = document.getElementById("btn-set");
+    const inputNum = document.getElementById("input-num");
+
+    /**
+     * 
+     */
+    async function retrieveValue() {
+
+      const readOptions = {
+        chain: CHAIN,
+        contractAddress: CONTRACT_ADDRESS,
+        abi: CONTRACT_ABI,
+        functionName: "retrieve",
+      };
+
+      //Can also use this for read-only function
+      // const res = await Moralis.Web3API.native.runContractFunction(options);
+
+      const res = await Moralis.executeFunction(readOptions);
+      console.log(res);
+      if (res && res._isBigNumber && res._hex) {
+        console.log(parseInt(res._hex, 16));
+      }
+
+
+    }
+
+    async function setValue() {
+      let value = parseInt(inputNum.value);
+      if (isNaN(value)) value = 0;
+
+      const writeOptions = {
+        chain: CHAIN,
+        contractAddress: CONTRACT_ADDRESS,
+        abi: CONTRACT_ABI,
+        functionName: "store",
+        params: { _favoriteNumber: value }
+      };
+      const transaction = await Moralis.executeFunction(writeOptions);
+      inputNum.style.display = "none"
+      btnSet.style.display = "none"
+
+      //Wait transaction until confirmed
+      await transaction.wait();
+
+      //Re-check the value again
+      await retrieveValue();
+
+
+    }
+
+
+
+    btnRetrieve.onclick = retrieveValue;
+    btnSet.onclick = setValue;
+
+  </script>
+</body>
+
+</html>
