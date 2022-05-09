@@ -11,7 +11,9 @@
   "dependencies": {
     "@ethereumjs/tx": "^3.5.1",
     "@truffle/hdwallet-provider": "^2.0.8",
+    "moralis": "^1.6.0",
     "solc": "^0.8.13",
-    "web3": "^1.7.3"
+    "web3": "^1.7.3",
+    "yarn": "^1.22.18"
   }
 }
